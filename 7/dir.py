@@ -1,38 +1,52 @@
 #!/usr/bin/python3
 
-
+cmds = []
 with open('dirout.txt', 'r') as f:
     cmds = f.read().splitlines()
 
-sizes = {}
+path = ""
 dirs = {}
-parent = "/"
-
+dirs.update({'/': 0})
 for line in cmds:
-    if "$ ls" in line:
-        continue
-    elif "dir" in line:
-        dirname = line.split()[1]
-        if parent not in dirs.keys():
-            dirs.update({parent: []})
-        dirs[parent].append(dirname)
-    elif "$ cd" in line:
-        cdto = line.split()[2]
-        parent = cdto
+    line = line.split()
+    # if user input
+    if line[0] == '$':
+        if line[1] == 'ls':
+            continue
+        # change directory
+        elif line[1] == 'cd':
+            # remove a directory from path (go up)
+            if line[2] == '..':
+                path = path[:path.rindex('/')]
+                # cannot go back any further than root
+                if path == "":
+                    path = '/'
+            # go to root
+            elif line[2] == '/':
+                path = '/'
+            # add directory to path   
+            else:
+                if path == '/':
+                    path = path + line[2]
+                else:
+                    path = path + '/' + line[2]
+                dirs.update({path: 0})
+    # not user input
     else:
-        fsize, fname = line.split()[0], line.split()[1]
-        if parent not in sizes.keys():
-            sizes.update({parent: 0})  
-        sizes[parent] += int(fsize)
-
+        # add file sizes to every directory in path
+        if line[0] != "dir":
+            fsize = int(line[0])
+            temppath = path
+            # avoid double counting root
+            if temppath != '/':
+                while temppath != "":
+                    dirs[temppath] += fsize
+                    temppath = temppath[:temppath.rindex('/')]
+            dirs['/'] += fsize
+# sum up using conditional
 total = 0
 for d in dirs:
-    if d not in sizes:
-        continue
-    elif sizes[d] <= 100000:
-        total += sizes[d]
-    for e in dirs[d]:
-        if e not in dirs and e in sizes:
-            total += sizes[e]
+    if dirs[d] <= 100000:
+        total += dirs[d]
 print(total)
-
+#print(dirs)
