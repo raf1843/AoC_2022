@@ -1,5 +1,6 @@
 #!/usr/bin/python3.11
 import sys
+from functools import cmp_to_key
 
 def cmpLists(left, right):
     # DEBUG: print("comparing", left, right)
@@ -36,22 +37,21 @@ if len(sys.argv) != 2:
     exit()
 file = sys.argv[1]
 lines = []
-packets = {}
+packets = []
 with open(file, 'r') as f:
     lines = f.read().strip().splitlines()
-for i in range(0, len(lines), 3):
-    packets.update({lines[i]: lines[i+1]})
+for i in range(len(lines)):
+    if lines[i] == '':
+        continue
+    packets.append(eval(lines[i]))
 
+# add dividers
+packets.append([[2]])
+packets.append([[6]])
 
-res = 0
-for left in packets:
-    # parse lists
-    right = packets[left]
-    idx = list(packets.keys()).index(left) + 1
-    left = eval(left)
-    # DEBUG: print(left)
-    right = eval(right)
-    # DEBUG: print(right)
+#for left in packets:
+def compare(left, right):
+    # DEBUG: print("Comparing", left, right)
     
     ordered = None
     # for item in left list
@@ -76,10 +76,13 @@ for left in packets:
         # if only one or the other is an int, cast to list
         else:
             if isinstance(left[i], int):
-                left[i] = [left[i]]
+                tmp = [left[i]]
+                ordered = cmpLists(tmp, right[i])
             elif isinstance(right[i], int):
-                right[i] = [right[i]]
-            ordered = cmpLists(left[i], right[i])
+                tmp = [right[i]]
+                ordered = cmpLists(left[i], tmp)
+            else:
+                ordered = cmpLists(left[i], right[i])
         if ordered == None:
             continue
         else:
@@ -88,5 +91,9 @@ for left in packets:
     if ordered or ordered == None:
         #if ordered == None:
             # DEBUG: print("True because left ran out first")
-        res += idx
-print(res)  
+        return 1
+    else:
+        return -1
+
+packets = sorted(packets, key=cmp_to_key(compare), reverse=True)
+print((packets.index([[2]])+1) * (packets.index([[6]])+1))
