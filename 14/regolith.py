@@ -50,7 +50,12 @@ for point in points:
             y.append(temp[1])
 # DEBUG: print(paths)
 
-bottom = max(y)
+bottom = max(y)+2
+# DEBUG: print(bottom)
+
+for i in range(500-(bottom*2), 500+(bottom*2)):
+    paths.append([i, bottom])
+
 
 sand = (500,0)
 pile = []
@@ -74,8 +79,11 @@ while possible:
             move[1] += 1
             moved = True
         if not moved:
-            # DEBUG: print(move)
+            # DEBUG: 
+            print(move)
             possible = True
             pile.append(move)
             break
+    if move == [500, 0]:
+        possible = False
 print(len(pile))
